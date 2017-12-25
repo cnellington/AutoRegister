@@ -55,20 +55,38 @@ def login(user, pwd, url):
 def checkOpen(url):
     return -1 == ses.get(url).text.find('** Closed **')
 
+def register(courses):
+    register_page = ses.get("https://sdb.admin.uw.edu/students/uwnetid/register.asp")
+    soup_register = BeautifulSoup(register_page.content, "html.parser").find('form').find_all('input')
+    reg_dict = {}
+    for u in soup_register:
+        if(u.has_attr('name')):
+            reg_dict[u['name']] = ''
+            if(u.has_attr('value')):
+                reg_dict[u['name']] = u['value']
+    course_index = 0
+    for key, val in reg_dict.items():
+        if(key.find('sln') != -1 and val == '' and course_index < len(courses)):
+            reg_dict[key] = courses[course_index]
+            course_index += 1
+    ses.post(register_page, data=reg_dict)
+
 
 user = input('UW NET ID: ')
 pwd = input('PASSWORD: ')
 
 #Setting courses to check
-sln1 = input('Course to add (enter q to begin checking): ')
-courses = [sln1]
-scheduling = True
-while(scheduling):
-    sln = input('Course to add (enter q to begin checking): ')
-    if(sln != 'q'):
-        courses.append(sln)
-    else:
-        scheduling = False
+courses = ['11441', '11442']
+sln1 = '11441'
+# sln1 = input('Course to add (enter q to begin checking): ')
+# courses = [sln1]
+# scheduling = True
+# while(scheduling):
+#     sln = input('Course to add (enter q to begin checking): ')
+#     if(sln != 'q'):
+#         courses.append(sln)
+#     else:
+#         scheduling = False
 
 # Beginning the UW account session
 check_url = "https://sdb.admin.uw.edu/timeschd/uwnetid/sln.asp?QTRYR=WIN+2018&SLN="+sln1
@@ -77,14 +95,16 @@ login(user, pwd, check_url)
 #Check courses and open registration when one opens
 checking = True
 while(checking):
+    checking = False
     for course in courses:
         target_url = "https://sdb.admin.uw.edu/timeschd/uwnetid/sln.asp?QTRYR=WIN+2018&SLN="+course
         isOpen = checkOpen(target_url)
-        if(isOpen):
+        if(not isOpen):
+            checking = True
+        else:
             print(course + " is open!")
-            if(checking):
-                webbrowser.open_new("https://sdb.admin.uw.edu/students/uwnetid/register.asp")
-                checking = False
-        sleep(.5)
+    if(not checking):
+        register(courses)
+        # webbrowser.open_new("https://sdb.admin.uw.edu/students/uwnetid/register.asp")
 
-print('Thank you for using the course checker. The session has exitted.')
+print('Done.')
