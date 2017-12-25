@@ -55,8 +55,9 @@ install_opener(opener)
 # Form POST URL
 url = "https://sdb.admin.uw.edu/timeschd/uwnetid/sln.asp?QTRYR=WIN+2018&SLN=13013"
 post_url = "https://weblogin.washington.edu/"
+post2_url = "https://sdb.admin.uw.edu/Shibboleth.sso/SAML2/POST"
 class_url = "https://sdb.admin.uw.edu/timeschd/uwnetid/sln.asp?QTRYR=WIN+2018&SLN=13013"
-
+test_url = "https://my.uw.edu/"
 # First request form data
 formData = {
     'user': login,
@@ -85,16 +86,15 @@ for u in soup_login:
 my_dict['j_username'] = login
 my_dict['j_password'] = pwd
 # my_dict['j_username'] = jsession
-print(my_dict)
 ses.post(post_url, data=my_dict)
-print(ses.get(url).text)
-print(ses.get(class_url).url)
+mid_url = ses.get(class_url)
+# print(mid_url.text)
+soup_check = BeautifulSoup(mid_url.content, "html.parser").find('form').find_all('input')
+mid_dict = {}
+for u in soup_check:
+    if(u.has_attr('name')):
+        mid_dict[u['name']] = u['value']
+ses.post(post2_url, data=mid_dict)
 
-
-# # First request object
-# req = Request(url, data)
-
-# # Submit request and read data
-# resp = urlopen(req)
-# respRead = resp.read().decode('utf-8')
-# print(respRead)
+course_page = ses.get(class_url)
+print(course_page.text.find('Open'))
