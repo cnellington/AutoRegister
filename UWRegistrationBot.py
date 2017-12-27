@@ -69,24 +69,26 @@ def register(courses):
         if(key.find('sln') != -1 and val == '' and course_index < len(courses)):
             reg_dict[key] = courses[course_index]
             course_index += 1
-    ses.post(register_page, data=reg_dict)
+        print(key + ": " + reg_dict[key])
+    input('Press enter to register')
+    # This line is hecka broken. Do not uncomment.
+    # ses.post(register_page.url, data=reg_dict)
+    print(ses.get(register_page.url).text)
 
 
 user = input('UW NET ID: ')
 pwd = input('PASSWORD: ')
 
 #Setting courses to check
-courses = ['11441', '11442']
-sln1 = '11441'
-# sln1 = input('Course to add (enter q to begin checking): ')
-# courses = [sln1]
-# scheduling = True
-# while(scheduling):
-#     sln = input('Course to add (enter q to begin checking): ')
-#     if(sln != 'q'):
-#         courses.append(sln)
-#     else:
-#         scheduling = False
+sln1 = input('Course to add (enter q to begin checking): ')
+courses = [sln1]
+scheduling = True
+while(scheduling):
+    sln = input('Course to add (enter q to begin checking): ')
+    if(sln != 'q'):
+        courses.append(sln)
+    else:
+        scheduling = False
 
 # Beginning the UW account session
 check_url = "https://sdb.admin.uw.edu/timeschd/uwnetid/sln.asp?QTRYR=WIN+2018&SLN="+sln1
@@ -103,8 +105,10 @@ while(checking):
             checking = True
         else:
             print(course + " is open!")
+    print('.')
+    sleep(1)
     if(not checking):
-        register(courses)
-        # webbrowser.open_new("https://sdb.admin.uw.edu/students/uwnetid/register.asp")
+        # register(courses)
+        webbrowser.open_new("https://sdb.admin.uw.edu/students/uwnetid/register.asp")
 
 print('Done.')
